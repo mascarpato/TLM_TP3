@@ -2,6 +2,9 @@ ifndef CROSS_COMPILE
 CROSS_COMPILE=microblaze-unknown-linux-gnu-
 endif
 
+ROOT=../../../
+include $(ROOT)/Makefile.common
+
 TARGET_CC = $(CROSS_COMPILE)gcc
 TARGET_LD = $(CROSS_COMPILE)ld
 TARGET_OBJDUMP = $(CROSS_COMPILE)objdump
@@ -15,7 +18,7 @@ INCLUDE = -I. -I../..
 
 OBJS = main.o boot.o it.o
 EXEC = a.out
-DEP_MAIN = ../main.c hal.h ../../address_map.h
+
 # Disassembly of the generated executable.
 dump.txt: $(EXEC)
 	$(TARGET_OBJDUMP) -d $< > $@
@@ -25,14 +28,16 @@ sections.txt: $(EXEC)
 	$(TARGET_READELF) -S $< > $@
 
 
-$(EXEC): $(OBJS)
-	$(TARGET_LD) -T ldscript $(OBJS)
+$(EXEC): # dependencies
+	echo "Rule for linking not implemented."; exit 1
+# (use $(TARGET_LD), and use the -T option to point to linker script ldscript)
 
-main.o: $(DEP_MAIN)
-	$(TARGET_CC) $(INCLUDE) -c $< -o $@
-	
-%.o: %.s main.o
-	$(TARGET_CC) -c $< -o $@
+main.o: # dependencies
+	echo "Rule for compilation not implemented"; exit 1
+# (compile with target C compiler)
+
+%.o: %.s
+	echo "Rule for assembly not implemented"; exit 1
 
 .PHONY: clean realclean
 clean:

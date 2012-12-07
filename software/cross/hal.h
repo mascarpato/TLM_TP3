@@ -20,12 +20,18 @@
 #define abort() ((*(int *)NULL) = 0)
 
 /* TODO : implementer ces primitives pour la compilation croisée */
-#define read_mem(a)     abort()
-#define write_mem(a,d)  abort()
+#define read_mem(a)     (*(uint32_t*)(a))
+#define write_mem(a,d)  (*(uint32_t*)(a))=(uint32_t)(d)
 #define wait_for_irq()  abort()
 #define cpu_relax()     abort()
 
-/* printf is disabled, for now ... */
-#define printf(...) NULL
+
+/* printf is disabled, for now ... 
+    NOT MORE!!!!!!!!!!!*/
+#define printf(x) NULL
+
+void printf(
+
+    write_mem
 
 #endif /* HAL_H */

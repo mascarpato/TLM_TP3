@@ -20,5 +20,5 @@ SECTIONS
                 _BssEnd = . ;
         } > bram
    /* TODO: find suitable address for stack, this one won't work */
-_stack_top  = 0xFFFFFFF0;
+_stack_top  = 0x201FFFFC;
 }

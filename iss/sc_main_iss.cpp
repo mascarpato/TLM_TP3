@@ -29,8 +29,7 @@ int sc_main(int, char**)
 	TIMER timer("timer", sc_core::sc_time(20, sc_core::SC_NS));
 	Vga vga("vga");
 	Intc intc("intc");
-	Gpio gpio("gpio");
-	
+	Gpio gpio("gpio");	
 	UART uart("UART");
 
 
@@ -62,8 +61,7 @@ int sc_main(int, char**)
 	bus.initiator(inst_ram.target);
 	bus.initiator(vga.target);
 	bus.initiator(timer.target);
-	bus.initiator(gpio.target);
-	
+	bus.initiator(gpio.target);	
 	bus.initiator(uart.target);
 
 	// interrupts
@@ -79,8 +77,7 @@ int sc_main(int, char**)
 	bus.map(data_ram.target, SRAM_BASEADDR,     SRAM_SIZE);
 	bus.map(vga.target,      VGA_BASEADDR,      VGA_SIZE);
 	bus.map(gpio.target,     GPIO_BASEADDR,     GPIO_SIZE);
-	bus.map(timer.target,    TIMER_BASEADDR,    TIMER_SIZE);
-	
+	bus.map(timer.target,    TIMER_BASEADDR,    TIMER_SIZE);	
 	bus.map(uart.target,     UART_BASEADDR,     UART_SIZE);
 
 

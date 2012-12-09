@@ -1,3 +1,5 @@
+//TODO comment irqs
+
 /********************************************************************
  * Copyright (C) 2009, 2012 by Verimag                              *
  * Initial author: Matthieu Moy                                     *
@@ -25,7 +27,10 @@ private:
 	void exec_data_request(enum iss_t::DataAccessType mem_type,
 			       uint32_t mem_addr,
 			       uint32_t mem_wdata);
-
+    
+    void irq_handler(void);
+    bool irq_actived;
+    
 	iss_t m_iss;
 };
 

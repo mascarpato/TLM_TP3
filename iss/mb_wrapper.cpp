@@ -23,14 +23,20 @@ MBWrapper::MBWrapper(sc_core::sc_module_name name)
 {
 	m_iss.reset();
 	m_iss.setIrq(false);
+	irq_actived = false;
 	SC_THREAD(run_iss);
-}
 
+	SC_METHOD(irq_handler);
+	sensitive << irq.pos();
+}
 
 void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 				  uint32_t mem_addr,
 				  uint32_t mem_wdata) {
 	uint32_t localbuf;
+	uint32_t byte_offset;
+	
+	//TODO: find a use for it
 	tlm::tlm_response_status status;
 	switch (mem_type) {
 	case iss_t::READ_WORD:
@@ -40,16 +46,29 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 		   (mem_addr into localbuf). */
 		// TODO
 		socket.read(mem_addr,localbuf);
-		localbuf=uint32_machine_to_be(localbuf);
 #ifdef DEBUG
 		std::cout << hex << "read    " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
 #endif
+		localbuf=uint32_machine_to_be(localbuf);
 		m_iss.setDataResponse(0,localbuf);
 	}
 	break;
 	case iss_t::READ_BYTE:
-	case iss_t::WRITE_HALF:
-	case iss_t::WRITE_BYTE:
+	    // TODO  COMMENT
+	    byte_offset = mem_addr%sizeof(uint32_t);
+		socket.read(mem_addr - byte_offset,localbuf);
+#ifdef DEBUG
+		std::cout << hex << "read    " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
+#endif
+
+		localbuf >>= 8 * (sizeof(uint32_t) - (byte_offset+1));
+		localbuf &= 0xFF;			
+
+		//localbuf=uint32_machine_to_be(localbuf);
+		m_iss.setDataResponse(0,localbuf);
+		break;
+	    
+	case iss_t::WRITE_HALF:    
 	case iss_t::READ_HALF:
 		// Not needed for our platform.
 		std::cerr << "Operation " << mem_type
@@ -59,6 +78,8 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 	case iss_t::LINE_INVAL:
 		// No cache => nothing to do.
 		break;
+		
+	case iss_t::WRITE_BYTE:
 	case iss_t::WRITE_WORD:
 	{
 		/* The ISS requested a data write
@@ -67,7 +88,7 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 		localbuf=uint32_be_to_machine(mem_wdata);
 		socket.write(mem_addr,localbuf);
 #ifdef DEBUG
-		std::cout << hex << "wrote   " << setw(10) << mem_wdata << " at address " << mem_addr << std::endl;
+		std::cout << hex << "wrote   " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
 #endif
 		m_iss.setDataResponse(0,0);
 	}
@@ -114,8 +135,24 @@ void MBWrapper::run_iss(void) {
 				exec_data_request(mem_type, mem_addr, mem_wdata);
 			}
 			m_iss.step();
+			
+			//TODO
+			if(irq_actived){
+			    inst_count++;
+			    if(inst_count == 5){
+			        m_iss.setIrq(false);
+			        irq_actived = false;
+			        inst_count = 0;
+			    }
+			}
 		}
 
 		sc_core::wait(PERIOD);
 	}
+}
+
+//TODO
+void MBWrapper::irq_handler(void) {
+    m_iss.setIrq(true);
+    irq_actived = true;
 }

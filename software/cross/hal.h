@@ -15,23 +15,15 @@
 
 #include <stdint.h>
 
-
-/* Dummy implementation of abort(): dereference a NULL pointer */
-#define abort() ((*(int *)NULL) = 0)
-
 /* TODO : implementer ces primitives pour la compilation croisée */
 #define read_mem(a)     (*(uint32_t*)(a))
-#define write_mem(a,d)  (*(uint32_t*)(a))=(uint32_t)(d)
-#define wait_for_irq()  abort()
-#define cpu_relax()     abort()
+#define write_mem(a,d)  (*(uint32_t*)(a)) = (uint32_t)(d)
+#define wait_for_irq()  while(!irq_received) cpu_relax();
+#define cpu_relax()     void
 
-
-/* printf is disabled, for now ... 
-    NOT MORE!!!!!!!!!!!*/
-#define printf(x) NULL
-
-void printf(
-
-    write_mem
+//TODO
+#define printf(x) int i = 0; \
+                  for( i=0; (char)x[i] != '\0'; \
+                  (*(char*)(UART_BASEADDR + UART_FIFO_WRITE)) = ((char)x[i++]));
 
 #endif /* HAL_H */

@@ -31,6 +31,6 @@ clean-subdirs:
 	@cd elf-loader/ && $(MAKE) clean
 clean: clean-subdirs
 
-ROOT=../..
+ROOT=..
 WITH_SDL=yesPlease
 include $(ROOT)/Makefile.common

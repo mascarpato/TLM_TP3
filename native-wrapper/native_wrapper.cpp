@@ -8,19 +8,19 @@ extern "C" int __start();
 extern "C" void __interrupt();
 
 extern "C" void write_mem(uint32_t addr, uint32_t data) {
-	abort(); // TODO
+        NativeWrapper::get_instance()->write_mem(addr,data);
 }
 
 extern "C" unsigned int read_mem(uint32_t addr) {
-	abort(); // TODO
+        return NativeWrapper::get_instance()->read_mem(addr);
 }
 
 extern "C" void cpu_relax() {
-	abort(); // TODO
+        NativeWrapper::get_instance()->cpu_relax();
 }
 
 extern "C" void wait_for_irq() {
-	abort(); // TODO
+        NativeWrapper::get_instance()->wait_for_irq();
 }
 
 /* To keep it simple, the soft wrapper is a singleton, we can
@@ -28,41 +28,52 @@ extern "C" void wait_for_irq() {
  * NativeWrapper::get_instance()->method_name()
  */
 NativeWrapper * NativeWrapper::get_instance() {
-	static NativeWrapper * instance = NULL;
-	if (!instance)
-		instance = new NativeWrapper("native_wrapper");
-	return instance;
+        static NativeWrapper * instance = NULL;
+        if (!instance)
+                instance = new NativeWrapper("native_wrapper");
+        return instance;
 }
 
 NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
-							     irq("irq")
+                                 irq("irq")
 {
+        SC_METHOD(interrupt_handler_internal);
+        sensitive << irq.pos();
+        SC_THREAD(compute);
 }
 
 void NativeWrapper::write_mem(unsigned int addr, unsigned int data)
 {
+        socket.write(addr,data);
 }
 
 unsigned int NativeWrapper::read_mem(unsigned int addr)
 {
-	abort(); // TODO
+        ensitlm::data_t data = 0;
+        socket.read(addr, data);
+        return data;
 }
 
 void NativeWrapper::cpu_relax()
 {
-	abort(); // TODO
+        wait(1, sc_core::SC_MS);
 }
 
 void NativeWrapper::wait_for_irq()
 {
-	abort(); // TODO
+        while (!interrupt)
+                wait(interrupt_event);
+        interrupt = false;
 }
 
 void NativeWrapper::compute()
 {
-	abort(); // TODO
+        __start();
 }
 
 void NativeWrapper::interrupt_handler_internal()
 {
+        interrupt = true;
+        interrupt_event.notify();
+        __interrupt();
 }

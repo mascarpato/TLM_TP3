@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 
-/* TODO : implementer ces primitives pour la compilation croisée */
+/* TODO comments */
 #define read_mem(a)     (*(uint32_t*)(a))
 #define write_mem(a,d)  (*(uint32_t*)(a)) = (uint32_t)(d)
 #define wait_for_irq()  while(!irq_received) cpu_relax();
@@ -23,7 +23,7 @@
 
 //TODO
 #define printf(x) int i = 0; \
-                  for( i=0; (char)x[i] != '\0'; \
+                  for(i = 0; (char)x[i] != '\0'; \
                   (*(char*)(UART_BASEADDR + UART_FIFO_WRITE)) = ((char)x[i++]));
 
 #endif /* HAL_H */

@@ -19,6 +19,6 @@ SECTIONS
                 *(.bss)
                 _BssEnd = . ;
         } > bram
-   /* TODO: find suitable address for stack, this one won't work */
-_stack_top  = 0x201FFFFC;
+/* The last address reserved for the memory in the bus */
+_stack_top  = 0x201FFFFC; 
 }

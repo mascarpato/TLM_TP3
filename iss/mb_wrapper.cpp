@@ -41,11 +41,9 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
         switch (mem_type) {
         case iss_t::READ_WORD:
         {
-
-                /* The ISS requested a data read
+                /* The ISS requested a word read
                  * (mem_addr into localbuf). 
                  */
-                // TODO
                 status = socket.read(mem_addr, localbuf);
                 if (status != tlm::TLM_OK_RESPONSE) { 
                         std::cerr << "Read error at address " << hex << mem_addr << std::endl
@@ -54,13 +52,17 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
 #ifdef DEBUG
                 std::cout << hex << "read    " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
 #endif
+                /* Converting the data from little-endian (Intel) to big-endian (ISS) */
                 localbuf = uint32_machine_to_be(localbuf);
                 m_iss.setDataResponse(0,localbuf);
         }
         break;
         case iss_t::READ_BYTE:
-                /* The ISS requested a data read
-                 * (mem_addr into localbuf). 
+                /* The ISS requested a byte read
+                 * (mem_addr into localbuf).
+                 *
+                 * Since the bus only works with addresses that are multiples of 4
+                 * the read must be performed on the word containing this byte
                  */
                 byte_offset = mem_addr % sizeof(uint32_t);
                 status = socket.read(mem_addr - byte_offset, localbuf);
@@ -72,6 +74,9 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
                 std::cout << hex << "read    " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
 #endif
 
+                /* Converting the data from little-endian to big-endian
+                 * while keeping only the requested byte
+                 */
                 localbuf >>= 8 * ((sizeof(uint32_t) - 1) - byte_offset);
                 localbuf &= 0xFF;                        
 
@@ -92,10 +97,12 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
         case iss_t::WRITE_BYTE:
         case iss_t::WRITE_WORD:
         {
-                /* The ISS requested a data write (a byte or a word)
+                /* The ISS requested a data write
                  * (mem_wdata at mem_addr). 
+                 *
+                 * Firstly the data must be converted
+                 * from big-endian to little-endian.
                  */
-                // TODO
                 localbuf = uint32_be_to_machine(mem_wdata);
                 status = socket.write(mem_addr, localbuf);
                 if (status != tlm::TLM_OK_RESPONSE) { 
@@ -121,8 +128,9 @@ void MBWrapper::run_iss(void) {
         int inst_count = 0;
 
         while(true) {
-                // std::cout << "Starting new processor cycle" << std::endl;
-
+#ifdef DEBUG
+                std::cout << "Starting new processor cycle" << std::endl;
+#endif
                 if (m_iss.isBusy())
                         m_iss.nullStep();
                 else {
@@ -133,11 +141,18 @@ void MBWrapper::run_iss(void) {
                         if (ins_asked) {
                                 /* The ISS requested an instruction.
                                  * We have to do the instruction fetch
-                                 * by reading from memory. */
-                                // TODO
+                                 * by reading from memory, 
+                                 * and converting it to big-endian.
+                                 */
                                 socket.read(ins_addr, localbuf);
+                                if (status != tlm::TLM_OK_RESPONSE) { 
+                                        std::cerr << "Read error at address " 
+                                                  << hex << ins_addr << std::endl
+                                                  << "Response status " << status 
+                                                  << std::endl;                      
+                                }
                                 localbuf = uint32_machine_to_be(localbuf);
-                                m_iss.setInstruction(0,localbuf);
+                                m_iss.setInstruction(0, localbuf);
                         }
 
                         bool mem_asked;
@@ -151,7 +166,9 @@ void MBWrapper::run_iss(void) {
                         }
                         m_iss.step();
                         
-                        //TODO
+                        /* Hold on for 5 steps before resetting the IRQ,
+                         * while the ISS will treat the interruption. 
+                         */
                         if (irq_actived){
                                 inst_count++;
                                 if (inst_count == 5){
@@ -165,7 +182,6 @@ void MBWrapper::run_iss(void) {
         }
 }
 
-//TODO
 void MBWrapper::irq_handler(void) {
         m_iss.setIrq(true);
         irq_actived = true;

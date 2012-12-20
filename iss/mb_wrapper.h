@@ -1,8 +1,7 @@
-//TODO comment irqs
-
 /********************************************************************
  * Copyright (C) 2009, 2012 by Verimag                              *
  * Initial author: Matthieu Moy                                     *
+ * Modified by: Mauricio Altieri and João Leidens                   *
  ********************************************************************/
 
 #ifndef MB_WRAPPER_H
@@ -32,4 +31,4 @@ private:
         iss_t m_iss;
 };
 
-#endif // MB_WRAPPER_H
+#endif /* MB_WRAPPER_H */

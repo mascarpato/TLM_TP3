@@ -34,22 +34,25 @@ NativeWrapper * NativeWrapper::get_instance() {
         return instance;
 }
 
-NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
-                                 irq("irq")
+NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name), irq("irq")
 {
         SC_METHOD(interrupt_handler_internal);
         sensitive << irq.pos();
-        dont_initialize();
         SC_THREAD(compute);
 }
 
 void NativeWrapper::write_mem(unsigned int addr, unsigned int data)
 {
-        socket.write(addr,data);
+        /* Write of the data received into
+	 * the corresponding adress. */
+	socket.write(addr,data);
 }
 
 unsigned int NativeWrapper::read_mem(unsigned int addr)
 {
+	/* Read of the adress received,
+	 * returning the value pointed
+	 * by this adress. */
         ensitlm::data_t data = 0;
         socket.read(addr, data);
         return (unsigned int)data;
@@ -57,24 +60,30 @@ unsigned int NativeWrapper::read_mem(unsigned int addr)
 
 void NativeWrapper::cpu_relax()
 {
+	/* Avoids the simulation to be
+	 * trapped in an infinite loop.
+	 */
         wait(1, sc_core::SC_MS);
 }
 
 void NativeWrapper::wait_for_irq()
 {
+	/* Waits the interruption signal and
+	 * the corresponding procedure to
+	 * finish. */
         if (!interrupt)
                 wait(interrupt_event);
         interrupt = false;
 }
 
 void NativeWrapper::compute()
-{
+{	/* Starts the simulation with 
+	 * this command. */
         __start();
 }
 
 void NativeWrapper::interrupt_handler_internal()
-{
-        interrupt = true;
+{	interrupt = true;
         interrupt_event.notify();
         __interrupt();
 }

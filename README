@@ -4,6 +4,7 @@ Maurício Altieri SCARPATO
 João Felipe LEIDENS
 
 Practical work 3 - Integration of embedded system
+
 This practical work consisted of taking a look into two simulation approaches.
 The first one was the ISS simulation (instruction set simulator). In this case the simulator interprets every instruction as 
 if it was really running on the system.
@@ -19,3 +20,6 @@ After we finished both implementations we watched them run at the same time for 
 see how the native simulation was faster than the iss. While the game of life was still going through its early stages in the
 iss simulation, the game of life in the native simulation was already in a much more advanced stage.
 
+As far as we know there is no bug that would induce a simulation's crash or any other problem.
+
+We added comments to help knowing what the lines of command were doing, with exception of the Makefiles, which are not commented.

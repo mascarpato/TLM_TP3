@@ -217,6 +217,8 @@ int __start() {
 		set_pixel(old_img_addr, 50, 12, 1);
 
 		while(1) {
+		        /* TODO */
+		        cpu_relax();
 			uint32_t d = read_mem(GPIO_BASEADDR + GPIO_DATA_OFFSET);
 			if(TEST_BIT(d, GPIO_BTN0)) {
 				break;

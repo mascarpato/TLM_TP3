@@ -39,6 +39,7 @@ NativeWrapper::NativeWrapper(sc_core::sc_module_name name) : sc_module(name),
 {
         SC_METHOD(interrupt_handler_internal);
         sensitive << irq.pos();
+        dont_initialize();
         SC_THREAD(compute);
 }
 
@@ -51,7 +52,7 @@ unsigned int NativeWrapper::read_mem(unsigned int addr)
 {
         ensitlm::data_t data = 0;
         socket.read(addr, data);
-        return data;
+        return (unsigned int)data;
 }
 
 void NativeWrapper::cpu_relax()
@@ -61,7 +62,7 @@ void NativeWrapper::cpu_relax()
 
 void NativeWrapper::wait_for_irq()
 {
-        while (!interrupt)
+        if (!interrupt)
                 wait(interrupt_event);
         interrupt = false;
 }

@@ -1,30 +1,21 @@
-Plateforme TLM avec ISS pour Microblaze.
+MODÉLISATION TRANSACTIONNELLE DES SYSTÈMES SUR PUCES
+SLE 3A - 21/12/2012
+Maurício Altieri SCARPATO
+João Felipe LEIDENS
 
-fpga/ => la "vraie" plateforme, sur FPGA.
+Practical work 3 - Integration of embedded system
+This practical work consisted of taking a look into two simulation approaches.
+The first one was the ISS simulation (instruction set simulator). In this case the simulator interprets every instruction as 
+if it was really running on the system.
+The second approach consisted of simulating the Game of Life running on the real platform (native simulation).
+We can already expect during the early stages of the development that the native simulation will be considerably faster than 
+the iss.
 
-hardware/ => les composants HW de la plateforme.
+Some part of the work involved modifying the makefiles needed to run both simulations. Once they were executing correctly, we
+only filled up the missing parts of the code with the proper instructions. So we have not done any extra work other than that
+specifically required by the practical work's specification.
 
-native-wrapper/ => le toplevel et les composants spécifiques au
-  wrapper natif.
+After we finished both implementations we watched them run at the same time for approximately ten minutes. This way we could 
+see how the native simulation was faster than the iss. While the game of life was still going through its early stages in the
+iss simulation, the game of life in the native simulation was already in a much more advanced stage.
 
-iss/ => toplevel et composants spécifiques à l'ISS microblaze:
-
-  microblaze.{cpp,h} est l'ISS de soclib, essentiellement, c'est une
-    classe avec une fonction step() appelée depuis l'extérieur. Si on
-    définie MBDEBUG à 1 dans ce fichier, l'ISS affiche l'éxécution du
-    code pas à pas.
-
-  MBWrapper.{cpp,h} c'est mon (Matthieu Moy) wrapper, avec une
-    interface BASIC d'un côté, et appelle step() de l'autre (largement
-    basé sur soclib/vci_iss_nocache.* récupéré dans soclib). Son
-    principal rôle est de faire while(true) {wait(...); iss.step();}.
-
-elf-loader/ => le chargeur de fichier elf et ses dépendances. Utilisé par
-  Memory.cpp pour charger le logiciel embarqué au format ELF.
-
-software/ => le logiciel embarqué.
-
-software/cross/ => le nécessaire pour la cross-compilation du logiciel
-  embarqué.
-
-software/native/ => le nécessaire pour la compilation en wrapper natif.

@@ -1,6 +1,7 @@
 /********************************************************************
  * Copyright (C) 2009, 2012 by Verimag                              *
  * Initial author: Matthieu Moy                                     *
+ * Modified by: Mauricio Altieri and João Leidens                   *
  ********************************************************************/
 
 #include "ensitlm.h"
@@ -25,7 +26,7 @@ MBWrapper::MBWrapper(sc_core::sc_module_name name)
         m_iss.setIrq(false);
         irq_actived = false;
         SC_THREAD(run_iss);
-
+        
         SC_METHOD(irq_handler);
         sensitive << irq.pos();
 }
@@ -36,16 +37,20 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
         uint32_t localbuf;
         uint32_t byte_offset;
         
-        //TODO: find a use for it
         tlm::tlm_response_status status;
         switch (mem_type) {
         case iss_t::READ_WORD:
         {
 
                 /* The ISS requested a data read
-                   (mem_addr into localbuf). */
+                 * (mem_addr into localbuf). 
+                 */
                 // TODO
-                socket.read(mem_addr, localbuf);
+                status = socket.read(mem_addr, localbuf);
+                if (status != tlm::TLM_OK_RESPONSE) { 
+                        std::cerr << "Read error at address " << hex << mem_addr << std::endl
+                                  << "Response status " << status << std::endl;                      
+                }
 #ifdef DEBUG
                 std::cout << hex << "read    " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
 #endif
@@ -54,14 +59,20 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
         }
         break;
         case iss_t::READ_BYTE:
-                // TODO  COMMENT
+                /* The ISS requested a data read
+                 * (mem_addr into localbuf). 
+                 */
                 byte_offset = mem_addr % sizeof(uint32_t);
-                socket.read(mem_addr - byte_offset, localbuf);
+                status = socket.read(mem_addr - byte_offset, localbuf);
+                if (status != tlm::TLM_OK_RESPONSE) { 
+                        std::cerr << "Read error at address " << hex << mem_addr - byte_offset << std::endl
+                                  << "Response status " << status << std::endl;                      
+                }
 #ifdef DEBUG
                 std::cout << hex << "read    " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
 #endif
 
-                localbuf >>= 8 * (sizeof(uint32_t) - 1 - byte_offset);
+                localbuf >>= 8 * ((sizeof(uint32_t) - 1) - byte_offset);
                 localbuf &= 0xFF;                        
 
                 m_iss.setDataResponse(0,localbuf);
@@ -69,23 +80,28 @@ void MBWrapper::exec_data_request(enum iss_t::DataAccessType mem_type,
             
         case iss_t::WRITE_HALF:    
         case iss_t::READ_HALF:
-                // Not needed for our platform.
+                /* Not needed for our platform. */
                 std::cerr << "Operation " << mem_type
                           << " unsupported for " << std::showbase << std::hex << mem_addr
                           << std::endl;
                 abort();
         case iss_t::LINE_INVAL:
-                // No cache => nothing to do.
+                /* No cache => nothing to do. */
                 break;
                 
         case iss_t::WRITE_BYTE:
         case iss_t::WRITE_WORD:
         {
-                /* The ISS requested a data write
-                   (mem_wdata at mem_addr). */
+                /* The ISS requested a data write (a byte or a word)
+                 * (mem_wdata at mem_addr). 
+                 */
                 // TODO
                 localbuf = uint32_be_to_machine(mem_wdata);
-                socket.write(mem_addr, localbuf);
+                status = socket.write(mem_addr, localbuf);
+                if (status != tlm::TLM_OK_RESPONSE) { 
+                        std::cerr << "Write error at address " << hex << mem_addr << std::endl
+                                  << "Response status " << status << std::endl;                      
+                }
 #ifdef DEBUG
                 std::cout << hex << "wrote   " << setw(10) << localbuf << " at address " << mem_addr << std::endl;
 #endif

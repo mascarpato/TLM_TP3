@@ -12,11 +12,11 @@ private:
         SC_CTOR(NativeWrapper);
 public:
         /* 
-           We use a singleton here. This is a limitation since it
-           doesn't allow multiple NativeWrapper instances (multiple CPU
-           in the platform), but it considerably reduces the
-           complexity of Makefiles, hal.h, ...
-        */
+         * We use a singleton here. This is a limitation since it
+         * doesn't allow multiple NativeWrapper instances (multiple CPU
+         * in the platform), but it considerably reduces the
+         * complexity of Makefiles, hal.h, ...
+         */
         static NativeWrapper * get_instance();
 
         void write_mem(unsigned int addr, unsigned int data);

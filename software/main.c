@@ -7,7 +7,8 @@
 int irq_received = 0;
 
 /* Must come after stdio.h to be able to modify libc functions
- * (printf, rand) after they are defined */
+ * (printf, rand) after they are defined 
+ */
 #include "hal.h"
 
 #define SW_VGA_WIDTH  VGA_WIDTH/4
